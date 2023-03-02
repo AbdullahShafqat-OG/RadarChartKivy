@@ -76,8 +76,11 @@ from kivy.core.window import Window
 class RadarChartWidget(Widget):
     triangles = []
     polygons = []
+    polygon_vertices = []
     test = "null"
     speed = 0.5
+    indices = [0, 1, 2, 3]
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.sides = 16  # Number of sides in the chart
@@ -102,6 +105,7 @@ class RadarChartWidget(Widget):
             vertices = [(center_x + radius * cos(angle), center_y + radius * sin(angle))
                         for angle in angles]
             # print(vertices[0])
+            self.polygon_vertices = []
             for i in range(self.sides):
                 p1 = vertices[i]
                 p2 = vertices[(i + 1) % self.sides]
@@ -123,24 +127,32 @@ class RadarChartWidget(Widget):
                 self.circle = Ellipse(pos=(x_mid - radius, y_mid - radius), size=(2 * radius, 2 * radius))
 
                 # drawing the middle lines
-                points_1 = self.evenly_spaced_points((p1[0], p1[1]), (p3[0], p3[1]), 8)
-                points_2 = self.evenly_spaced_points((p2[0], p2[1]), (p3[0], p3[1]), 8)
+                points_1 = self.evenly_spaced_points((p1[0], p1[1]), (p3[0], p3[1]), 9)
+                points_2 = self.evenly_spaced_points((p2[0], p2[1]), (p3[0], p3[1]), 9)
                 # print(points_1[0])
                 for j in range(0, len(points_1)):
                     # print(points_1[j][0])
                     Line(points=[points_1[j], points_2[j]], width=2, group='triangle')
 
+                polygon_vertices = []
                 for j in range(0, len(points_1)-1):
                     mesh_vertices = [*points_1[j], 1, 1, *points_1[j+1], 1, 1, *points_2[j+1], 1, 1, *points_2[j], 1, 1]
+                    polygon_vertices.append(mesh_vertices)
+                    # print(mesh_vertices)
                     self.polygons.append([points_1[j], points_1[j+1], points_2[j+1], points_2[j]])
-                    indices = [0, 1, 2, 3]
-                    Mesh(vertices=mesh_vertices, indices=indices, mode="triangle_fan")
+                    # r, g, b = random.random(), random.random(), random.random()
+                    # Color(r, g, b, 0.5)
+                    # Mesh(vertices=polygon_vertices[j], indices=self.indices, mode="triangle_fan")
+                self.polygon_vertices.append(polygon_vertices)
                 # v = [*points_1[2], 1, 1, *points_1[3], 1, 1, *points_2[3], 1, 1, *points_2[2], 1, 1]
                 # self.polygons.append([points_1[2], points_1[3], points_2[3], points_2[2]])
                 # indices = [0, 1, 2, 3]
                 # Mesh(vertices=v, indices=indices, mode="triangle_fan")
                 r, g, b = random.random(), random.random(), random.random()
                 Color(r, g, b, 0.5)
+
+            print(len(self.polygon_vertices))
+            Mesh(vertices=self.polygon_vertices[0][7], indices=self.indices, mode="triangle_fan")
 
     def evenly_spaced_points(self, start, end, n):
         """
